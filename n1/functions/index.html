@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Real-time Chat App</title>
+  </head>
+  <body>
+    <ul id="messages"></ul>
+    <form id="form">
+      <input id="message" autocomplete="off" /><button>Send</button>
+    </form>
+
+    <script src="https://www.gstatic.com/firebasejs/8.2.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.2.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.2.1/firebase-database.js"></script>
+    <script src="/__/firebase/init.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+
+    <script>
+      // Initialize Firebase
+      var firebaseConfig = {
+        apiKey: "AIzaSyBLWzahxLC7VQyiOzyRSTuRVvfQNANBFzg",
+        authDomain: "chat-test-a340b.firebaseapp.com",
+        databaseURL: "https://chat-test-a340b-default-rtdb.firebaseio.com",
+        projectId: "chat-test-a340b",
+        storageBucket: "chat-test-a340b.appspot.com",
+        messagingSenderId: "252533102989",
+        appId: "1:252533102989:web:5b743937da0a8ab8aac5c4",
+      };
+      firebase.initializeApp(firebaseConfig);
+      var db = firebase.firestore();
+
+      // Initialize Socket.io
+      var socket = io();
+
+      // Send message
+      document.getElementById("form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        var message = document.getElementById("message").value;
+        db.collection("messages").add({
+          message: message,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+        document.getElementById("message").value = "";
+      });
+
+      // Listen for new messages
+      socket.on("message", (message) => {
+        var li = document.createElement("li");
+        li.textContent = message;
+        document.getElementById("messages").appendChild(li);
+      });
+    </script>
+  </body>
+</html>

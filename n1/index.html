@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Real-time Chat App</title>
+</head>
+<body>
+  <ul id="messages"></ul>
+  <form id="form">
+    <input id="message" autocomplete="off" /><button>Send</button>
+  </form>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/7.0.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.0.0/firebase-firestore.js"></script>
+
+  <!-- Socket.io -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.4/socket.io.js"></script>
+
+  <script>
+    // Initialize Firebase
+    const firebaseConfig = {
+        apiKey: "AIzaSyBLWzahxLC7VQyiOzyRSTuRVvfQNANBFzg",
+        authDomain: "chat-test-a340b.firebaseapp.com",
+        databaseURL: "https://chat-test-a340b-default-rtdb.firebaseio.com",
+        projectId: "chat-test-a340b",
+        storageBucket: "chat-test-a340b.appspot.com",
+        messagingSenderId: "252533102989",
+        appId: "1:252533102989:web:5b743937da0a8ab8aac5c4",
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Initialize Socket.io
+    const socket = io();
+
+    // Send message
+    document.getElementById('form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const message = document.getElementById('message').value;
+      db.collection('messages').add({
+        message: message,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+      document.getElementById('message').value = '';
+    });
+
+    // Listen for new messages from Firebase
+    db.collection('messages')
+      .orderBy('createdAt')
+      .onSnapshot((snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+          if (change.type === 'added') {
+            const message = change.doc.data().message;
+            const li = document.createElement('li');
+            li.innerHTML = message;
+            document.getElementById('messages').appendChild(li);
+          }
+        });
+      });
+
+    // Listen for new messages from Socket.io
+    socket.on('message', (message) => {
+      const li = document.createElement('li');
+      li.innerHTML = message.message;
+      document.getElementById('messages').appendChild(li);
+    });
+  </script>
+</body>
+</html>
